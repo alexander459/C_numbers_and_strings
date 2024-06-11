@@ -23,9 +23,12 @@ void PrintLnNumber(number n);
 validity AssignNumber(number n, char* num);
 validity ReadNumber(number n);
 validity AddNumber(number res, number n1, number n2);
+validity SubNumber(number res, number n1, number n2);
 
 type GetTypeNumber(number n);
 sign GetSignNumber(number n);
+
+void ChangeSignNumber(number n);
 
 size_t GetTotalDigits(number n);
 size_t GetDecimalDigits(number n);

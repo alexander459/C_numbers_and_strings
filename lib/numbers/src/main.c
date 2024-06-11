@@ -10,12 +10,12 @@ int main(void){
 	Number(&n2, NULL);
 	Number(&n3, NULL);
 
-	/*AssignNumber(n1, "32");
-	AssignNumber(n2, "19");
-	AddNumber(n3, n1, n2);
+	AssignNumber(n1, "-43.6576");
+	AssignNumber(n2, "0.87");
+	SubNumber(n3, n1, n2);
 	PrintLnNumber(n3);
-*/
 
+#ifdef alex
 	stop = 0;
 	while(stop == 0){
 		scanf("%d", &i);
@@ -59,7 +59,7 @@ int main(void){
 		}
 		printf("\n\n\n");
 	}
-
+#endif
 	DeleteNumber(n1);
 	DeleteNumber(n2);
 	DeleteNumber(n3);

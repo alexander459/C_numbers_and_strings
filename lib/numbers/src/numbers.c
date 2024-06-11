@@ -57,13 +57,19 @@ static void check_sign(number new_num, char* num){
 static void check_type(number new_num, char* num){
 	const char* integer_pattern = "^[+-]?[0-9]+$";
 	const char* float_pattern = "^[+-]?[0-9]+\\.[0-9]+$";
+	char* tmp_num;
+	string s;
+
 	size_t i;
 
+	s = String(num);
+	tmp_num = GetString(s);
+
 	if(match_regex(num, integer_pattern)){
-		AssignString(new_num->whole_num, num);
+		AssignString(new_num->whole_num, tmp_num);
 
 		new_num->num_type = INT;
-		AssignString(new_num->int_part, num);
+		AssignString(new_num->int_part, tmp_num);
 		AssignString(new_num->decimal_part, "0");
 
 		RemoveFromString(new_num->int_part, '-');
@@ -73,14 +79,14 @@ static void check_type(number new_num, char* num){
 		new_num->dec_digits = 0;
 
 	}else if(match_regex(num, float_pattern)){
-		AssignString(new_num->whole_num, num);
+		AssignString(new_num->whole_num, tmp_num);
 
 		new_num->num_type = FLOAT;
-		for(i=0; num[i]!='.'; i++);
-		AssignString(new_num->decimal_part, &num[i+1]);
-		num[i] = '\0';
-		AssignString(new_num->int_part, num);
-		num[i] = '.';
+		for(i=0; tmp_num[i]!='.'; i++);
+		AssignString(new_num->decimal_part, &tmp_num[i+1]);
+		tmp_num[i] = '\0';
+		AssignString(new_num->int_part, tmp_num);
+		tmp_num[i] = '.';
 
 		RemoveFromString(new_num->int_part, '-');
 		RemoveFromString(new_num->int_part, '+');
@@ -91,6 +97,7 @@ static void check_type(number new_num, char* num){
 		new_num->num_type = INVAL_T;
 	}
 
+	DeleteString(s);
 	return;
 }
 
@@ -235,10 +242,46 @@ static int singleAdd(int n1, int n2, int* carry){
 	res = res%10;
 	return res;
 }
-/*
-static singleSub(int n1, int n2){
-	return (n1 - n2);
-}*/
+
+static int singleSub(int n1, int n2, int* carry){
+
+	n2 = n2 + (*carry);
+	if(n1 < n2){
+		n1 = n1*10;
+		*carry = 1;
+	}
+	return (n1-n2);
+}
+
+static void fill_zeros_for_operations(number n1, number n2){
+	size_t missing_ints, missing_decs, i;
+
+	if(n1->int_digits > n2->int_digits){
+		missing_ints = n1->int_digits - n2->int_digits;
+		for(i=0; i<missing_ints; i++){
+			PushFrontString(n2->int_part, '0');
+		}
+	}else{
+		missing_ints = n2->int_digits - n1->int_digits;
+		for(i=0; i<missing_ints; i++){
+			PushFrontString(n1->int_part, '0');
+		}
+	}
+
+	if(n1->dec_digits > n2->dec_digits){
+		missing_decs = n1->dec_digits - n2->dec_digits;
+		for(i=0; i<missing_decs; i++){
+			PushBackString(n2->decimal_part, '0');
+		}
+	}else{
+		missing_decs = n2->dec_digits - n1->dec_digits;
+		for(i=0; i<missing_decs; i++){
+			PushBackString(n1->decimal_part, '0');
+		}
+	}
+	return;
+}
+
 static void AddPart(string res, string n1, string n2, int* carry){
 	long int n1_i, n2_i;
 	char* n1_str;
@@ -296,6 +339,8 @@ validity AddNumber(number res, number n1, number n2){
 		AssignString(res->whole_num, "");
 
 		carry = 0;
+		fill_zeros_for_operations(n1, n2);
+
 		AddPart(res->decimal_part, n1->decimal_part, n2->decimal_part, &carry);
 		AddPart(res->int_part, n1->int_part, n2->int_part, &carry);
 
@@ -320,10 +365,42 @@ validity AddNumber(number res, number n1, number n2){
 		}
 
 	}else{
-		/* subtruct */
+		if(n1->num_sign == NEGATIVE) SubNumber(res, n2, n1);
+		else SubNumber(res, n1, n2);
 	}
+
 	return VALID_NUMBER;
 }
 
 
+validity SubNumber(number res, number n1, number n2){
+	int carry;
 
+	if(n1->valid == INVALID_NUMBER || n2->valid == INVALID_NUMBER) return INVALID_NUMBER;
+
+	if((n1->num_type == FLOAT) || (n2->num_type == FLOAT))
+		res->num_type = FLOAT;
+	else
+		res->num_type = INT;
+
+
+	if(n1->num_sign != n2->num_sign){
+		ChangeSignNumber(n2);
+		return AddNumber(res, n1, n2);
+	}else{
+
+	}
+	return VALID_NUMBER;
+
+}
+
+void ChangeSignNumber(number n){
+	assert(n != NULL);
+	if(n->num_sign == INVAL_S)
+		return;
+	if(n->num_sign == POSITIVE)
+		n->num_sign = NEGATIVE;
+	else
+		n->num_sign = POSITIVE;
+	return;
+}
