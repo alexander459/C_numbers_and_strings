@@ -50,6 +50,15 @@ int main(void){
 				PrintLnString(s2);
 				printf("%ld\n", SizeString(s2));
 				break;
+			case 4:
+				c = getchar();
+				if(RemoveFromString(s2, c) == 1)
+					printf("ok!\n");
+				else
+					printf("Nope...\n");
+				PrintLnString(s2);
+				printf("%ld\n", SizeString(s2));
+				break;
 			default:
 				stop = 1;
 		}

@@ -99,8 +99,21 @@ size_t SizeString(string s){
 }
 
 void Copy(string dst, string src){
+	size_t len;
+
 	assert(dst != NULL);
 	assert(src != NULL);
+	assert(dst->str != NULL);
+	assert(src->str != NULL);
+
+	if(strlen(dst->str) > strlen(src->str))
+		len = strlen(dst->str);
+	else
+		len = strlen(src->str);
+
+	dst->str = (char*)realloc((char*)dst->str, len + 1);
+	assert(dst->str != NULL);
+
 	dst->str = strcpy(dst->str, src->str);
 	dst->len = src->len;
 	return;
@@ -108,26 +121,61 @@ void Copy(string dst, string src){
 
 
 void Copy_n(string dst, string src, size_t n){
+	size_t len;
+
 	assert(dst != NULL);
 	assert(src != NULL);
+	assert(dst->str != NULL);
+	assert(src->str != NULL);
+
+	if(strlen(dst->str) > strlen(src->str))
+		len = strlen(dst->str);
+	else
+		len = strlen(src->str);
+
+	dst->str = (char*)realloc((char*)dst->str, len + 1);
+	assert(dst->str != NULL);
+
 	dst->str = strncpy(dst->str, src->str, n);
-	dst->len = n;
+	dst->len = src->len;
 	return;
 }
 
 
 void Concat(string dst, string src){
+	size_t len;
+
 	assert(dst != NULL);
 	assert(src != NULL);
+	assert(dst->str != NULL);
+	assert(src->str != NULL);
+
+	len = strlen(src->str) + strlen(dst->str);
+
+	dst->str = (char*)realloc((char*)dst->str, len + 1);
+	assert(dst->str != NULL);
+
 	dst->str = strcat(dst->str, src->str);
+	dst->len += src->len;
 	return;
 }
 
 
 void Concat_n(string dst, string src, size_t n){
+	size_t len;
+
 	assert(dst != NULL);
 	assert(src != NULL);
+	assert(dst->str != NULL);
+	assert(src->str != NULL);
+
+	len = strlen(src->str) + strlen(dst->str);
+
+	dst->str = (char*)realloc((char*)dst->str, len + 1);
+	assert(dst->str != NULL);
+
 	dst->str = strncat(dst->str, src->str, n);
+	dst->len += n;
 	return;
 }
 
@@ -146,22 +194,23 @@ char* GetString(string s){
 
 
 void AssignString(string s, char* str){
-	size_t i;
+	size_t i, s_len;
 
 	assert(s != NULL);
 	assert(s->str != NULL);
 	assert(str != NULL);
 
-	i = 0;
-	do{	
-		s->str[i] = str[i];
-		i++;
-		s->str = (char*)realloc(s->str, i+1);
-		assert(s->str != NULL);
-	}while(str[i] != '\0');
+	s_len = strlen(str);
+	s->len = 0;
 
-	s->str[i] = '\0';
-	s->len = i;
+	for(i=0; i<=s_len; i++){
+		s->str = (char*)realloc((char*)s->str, i+1);
+		assert(s->str != NULL);
+		s->str[i] = str[i];
+		s->len++;
+	}
+
+	s->len--;				/* LEN DOES NOT INCLUDE '\0' */
 
 	return;
 }
@@ -253,3 +302,25 @@ size_t GetAllocatedSizeString(string s){
 	return s->bytes_alloced;
 }
 
+
+int RemoveFromString(string s, char c){
+	size_t i;
+
+	assert(s != NULL);
+	assert(s->str != NULL);
+	assert(c != '\0');
+	for(i=0; s->str[i] != c && s->str[i] != '\0'; i++){
+
+	}
+	if(s->str[i] == '\0') return 0;
+	
+	while(s->str[i] != '\0'){
+		s->str[i] = s->str[i+1];
+		i++;
+	}
+	
+	s->len--;
+	s->str = (char*)realloc((char*)s->str, s->len + 1);
+	assert(s->str != NULL);
+	return 1;
+}
